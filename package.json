@@ -1,6 +1,6 @@
 {
   "name": "@danillosl/spark",
-  "version": "0.0.7",
+  "version": "0.0.9",
   "description": "finite state machine",
   "keywords": [],
   "main": "dist/spark.umd.js",
@@ -33,7 +33,7 @@
     "semantic-release-prepare": "ts-node tools/semantic-release-prepare",
     "precommit": "lint-staged",
     "travis-deploy-once": "travis-deploy-once",
-    "publish": "npm publish --access public"
+    "push-npm": "npm publish --access public"
   },
   "lint-staged": {
     "{src,test}/**/*.ts": [

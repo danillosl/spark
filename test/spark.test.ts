@@ -1,3 +1,4 @@
+import { Queue } from '../src/ActionQueue'
 import { Context } from '../src/Context'
 import { FiniteStateMachine } from '../src/FiniteStateMachine'
 import { StateMachineException } from '../src/StateMachineException'
@@ -71,10 +72,14 @@ describe('Dummy test', async () => {
         [SagaStates.STATE_A]: {
           [SagaEvents.EVENT_A]: {
             target: SagaStates.STATE_B,
-            action: (context, payload) => {
+            action: (context, payload, state) => {
               console.log(
                 `state action A event A ${JSON.stringify(context)} : ${JSON.stringify(payload)}`
               )
+              state.dispatch({
+                type: SagaEvents.EVENT_B,
+                payload: { param3: 'event b' }
+              })
             },
             catch: [
               {
@@ -92,10 +97,16 @@ describe('Dummy test', async () => {
         [SagaStates.STATE_B]: {
           [SagaEvents.EVENT_B]: {
             target: SagaStates.STATE_C,
-            action: (context, payload) =>
+            action: (context, payload, machine) => {
               console.log(
                 `state action B event B ${JSON.stringify(context)} : ${JSON.stringify(payload)}`
               )
+
+              machine.dispatch({
+                type: SagaEvents.EVENT_C,
+                payload: { param4: 'event c' }
+              })
+            }
           }
         },
         [SagaStates.STATE_C]: {
@@ -114,23 +125,25 @@ describe('Dummy test', async () => {
     new Entity()
   )
 
-  await stateMachine.dispatch({
+  stateMachine.dispatch({
     type: SagaEvents.EVENT_A,
     payload: { param1: 'event a' }
   })
 
-  await stateMachine.dispatch({
+  stateMachine.dispatch({
     type: SagaEvents.EVENT_A,
     payload: { param2: 'event a2' }
   })
 
-  await stateMachine.dispatch({
-    type: SagaEvents.EVENT_B,
-    payload: { param3: 'event b' }
-  })
-
-  await stateMachine.dispatch({
-    type: SagaEvents.EVENT_C,
-    payload: { param4: 'event c' }
-  })
+  // const actionQueue = new Queue<number>()
+  // actionQueue.enqueue(1)
+  // console.log(actionQueue)
+  // actionQueue.enqueue(2)
+  // console.log(actionQueue)
+  // actionQueue.enqueue(3)
+  // console.log(actionQueue)
+  // console.log(actionQueue.dequeue())
+  // console.log(actionQueue.dequeue())
+  // console.log(actionQueue.dequeue())
+  // console.log(actionQueue.dequeue())
 })

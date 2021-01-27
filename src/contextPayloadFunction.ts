@@ -1,1 +1,1 @@
-export type contextPayloadFunction<context> = (context: context, payload: any) => void
+export type contextPayloadFunction<C, M> = (context: C, payload: any, finiteStateMachine: M) => void

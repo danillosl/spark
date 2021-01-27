@@ -1,28 +1,30 @@
 import { contextPayloadFunction } from './contextPayloadFunction'
+import { FiniteStateMachine } from './FiniteStateMachine'
+import { Context } from './spark'
 import { StateMachineException } from './StateMachineException'
 
 export type StateMahchineDescriptor<
-  Context,
-  State extends string | number,
-  Event extends string | number
+  C extends Context<S>,
+  S extends string | number,
+  E extends string | number
 > = {
-  initialState: State
-  beforeTransition?: contextPayloadFunction<Context>
-  afterTransition?: contextPayloadFunction<Context>
+  initialState: S
+  beforeTransition?: contextPayloadFunction<C, FiniteStateMachine<C, S, E>>
+  afterTransition?: contextPayloadFunction<C, FiniteStateMachine<C, S, E>>
   retry?: {
     error: typeof StateMachineException
-    action: contextPayloadFunction<Context>
+    action: contextPayloadFunction<C, FiniteStateMachine<C, S, E>>
   }
   states: {
-    [Key in State]?: {
-      [Key in Event]?: {
-        target: State
-        action: contextPayloadFunction<Context>
+    [Key in S]?: {
+      [Key in E]?: {
+        target: S
+        action: contextPayloadFunction<C, FiniteStateMachine<C, S, E>>
         catch?: [
           {
             error: typeof Error
-            action: contextPayloadFunction<Context>
-            target: State
+            action: contextPayloadFunction<C, FiniteStateMachine<C, S, E>>
+            target: S
           }
         ]
       }

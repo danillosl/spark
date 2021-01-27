@@ -58,17 +58,21 @@ export class FiniteStateMachine<
       const { retry } = this._stateMachineDescriptor
 
       if (retry && err instanceof retry.error) {
-        retry.action(this._context, action.payload, this)
+        retry.action(this._context, action, this)
+        return
       }
 
-      if (!event.catch) throw new err()
+      if (!event.catch) throw err
 
       for (const catchObject of event.catch) {
         if (err instanceof catchObject.error) {
           await catchObject.action(this.context, action.payload, this)
           this._context.state = catchObject.target
+          return
         }
       }
+
+      throw err
     } finally {
       this.executeNextAction()
     }

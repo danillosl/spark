@@ -56,16 +56,16 @@ describe('Dummy test', async () => {
   const stateMachine = new FiniteStateMachine<Entity, SagaStates, SagaEvents>(
     {
       initialState: SagaStates.STATE_A,
-      beforeTransition: (context, payload) => {
-        console.log(`before transition ${JSON.stringify(context)} : ${JSON.stringify(payload)}`)
+      beforeTransition: (context, action) => {
+        console.log(`before transition ${JSON.stringify(context)} : ${JSON.stringify(action)}`)
       },
-      afterTransition: (context, payload) => {
-        console.log(`after transition ${JSON.stringify(context)} : ${JSON.stringify(payload)}`)
+      afterTransition: (context, action) => {
+        console.log(`after transition ${JSON.stringify(context)} : ${JSON.stringify(action)}`)
       },
       retry: {
         error: CustomStateMachineException,
-        action: (context, payload) => {
-          console.log(`retry action ${JSON.stringify(context)} : ${JSON.stringify(payload)}`)
+        action: (context, action) => {
+          console.log(`retry action ${JSON.stringify(context)} : ${JSON.stringify(action)}`)
         }
       },
       states: {

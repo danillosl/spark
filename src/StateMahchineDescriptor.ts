@@ -1,6 +1,7 @@
 import { contextPayloadFunction } from './contextPayloadFunction'
+import { contextActionFunction } from './contextActionFunction'
 import { FiniteStateMachine } from './FiniteStateMachine'
-import { Context } from './spark'
+import { Action, Context } from './spark'
 import { StateMachineException } from './StateMachineException'
 
 export type StateMahchineDescriptor<
@@ -9,11 +10,11 @@ export type StateMahchineDescriptor<
   E extends string | number
 > = {
   initialState: S
-  beforeTransition?: contextPayloadFunction<C, FiniteStateMachine<C, S, E>>
-  afterTransition?: contextPayloadFunction<C, FiniteStateMachine<C, S, E>>
+  beforeTransition?: contextActionFunction<C, Action<E>, FiniteStateMachine<C, S, E>>
+  afterTransition?: contextActionFunction<C, Action<E>, FiniteStateMachine<C, S, E>>
   retry?: {
     error: typeof StateMachineException
-    action: contextPayloadFunction<C, FiniteStateMachine<C, S, E>>
+    action: contextActionFunction<C, Action<E>, FiniteStateMachine<C, S, E>>
   }
   states: {
     [Key in S]?: {

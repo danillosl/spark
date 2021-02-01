@@ -1,6 +1,6 @@
 {
   "name": "@danillosl/spark",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "finite state machine",
   "keywords": [],
   "main": "dist/spark.umd.js",

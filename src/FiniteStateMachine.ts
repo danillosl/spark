@@ -8,8 +8,8 @@ export class FiniteStateMachine<
   S extends string | number,
   E extends string | number
 > {
+  private _context: C
   private actionQueue: Queue<Action<E>> = new Queue()
-  private readonly _context: C
   private _stateMachineDescriptor: StateMahchineDescriptor<C, S, E>
 
   constructor(stateMachineDescriptor: StateMahchineDescriptor<C, S, E>, context: C) {
@@ -21,6 +21,10 @@ export class FiniteStateMachine<
 
   get context(): C {
     return this._context
+  }
+
+  set context(context: C) {
+    this._context = context
   }
 
   public async dispatch(action: Action<E>) {

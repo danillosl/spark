@@ -1,7 +1,7 @@
+import { Action, Context } from './spark'
 import { contextPayloadFunction } from './contextPayloadFunction'
 import { contextActionFunction } from './contextActionFunction'
 import { FiniteStateMachine } from './FiniteStateMachine'
-import { Action, Context } from './spark'
 import { StateMachineException } from './StateMachineException'
 
 export type StateMahchineDescriptor<
@@ -13,7 +13,6 @@ export type StateMahchineDescriptor<
   beforeTransition?: contextActionFunction<C, Action<E>, FiniteStateMachine<C, S, E>>
   afterTransition?: contextActionFunction<C, Action<E>, FiniteStateMachine<C, S, E>>
   retry?: {
-    error: typeof StateMachineException
     action: contextActionFunction<C, Action<E>, FiniteStateMachine<C, S, E>>
   }
   states: {
@@ -23,7 +22,7 @@ export type StateMahchineDescriptor<
         action: contextPayloadFunction<C, FiniteStateMachine<C, S, E>>
         catch?: [
           {
-            error: typeof Error
+            error: typeof StateMachineException
             action: contextPayloadFunction<C, FiniteStateMachine<C, S, E>>
             target: S
           }

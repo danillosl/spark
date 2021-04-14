@@ -1,6 +1,7 @@
 import { Action } from './Action'
 import { Queue } from './ActionQueue'
 import { Context } from './Context'
+import { StateMachineException } from './StateMachineException'
 import { StateMahchineDescriptor } from './StateMahchineDescriptor'
 
 export class FiniteStateMachine<
@@ -61,22 +62,22 @@ export class FiniteStateMachine<
     } catch (err) {
       const { retry } = this._stateMachineDescriptor
 
-      if (retry && err instanceof retry.error) {
-        retry.action(this._context, action, this)
-        return
-      }
+      let found = false
 
-      if (!event.catch) throw err
-
-      for (const catchObject of event.catch) {
-        if (err instanceof catchObject.error) {
-          await catchObject.action(this.context, action.payload, this)
-          this._context.state = catchObject.target
-          return
+      if (event.catch) {
+        for (const catchObject of event.catch) {
+          if (err instanceof catchObject.error) {
+            await catchObject.action(this.context, action.payload, this)
+            this._context.state = catchObject.target
+            found = true
+            break
+          }
         }
       }
 
-      throw err
+      if (!found && retry && err instanceof StateMachineException) {
+        retry.action(this._context, action, this)
+      }
     } finally {
       this.executeNextAction()
     }

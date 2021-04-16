@@ -4,18 +4,34 @@ import { Context } from './Context'
 import { StateMachineException } from './StateMachineException'
 import { StateMahchineDescriptor } from './StateMahchineDescriptor'
 
-export class FiniteStateMachine<
+type ExecutionContext<
+  D,
   C extends Context<S>,
   S extends string | number,
   E extends string | number
+> = D & {
+  machine: FiniteStateMachine<C, S, E, D>
+}
+
+export class FiniteStateMachine<
+  C extends Context<S>,
+  S extends string | number,
+  E extends string | number,
+  D
 > {
   private _context: C
+  private dependencies: D
   private actionQueue: Queue<Action<E>> = new Queue()
-  private _stateMachineDescriptor: StateMahchineDescriptor<C, S, E>
+  private _stateMachineDescriptor: StateMahchineDescriptor<C, S, E, ExecutionContext<D, C, S, E>>
 
-  constructor(stateMachineDescriptor: StateMahchineDescriptor<C, S, E>, context: C) {
+  constructor(
+    stateMachineDescriptor: StateMahchineDescriptor<C, S, E, ExecutionContext<D, C, S, E>>,
+    context: C,
+    dependencies: D
+  ) {
     this._stateMachineDescriptor = stateMachineDescriptor
     this._context = context
+    this.dependencies = dependencies
 
     if (!this._context.state) this._context.state = this._stateMachineDescriptor.initialState
   }
@@ -51,13 +67,19 @@ export class FiniteStateMachine<
 
     try {
       if (this._stateMachineDescriptor.beforeTransition) {
-        await this._stateMachineDescriptor.beforeTransition(this._context, action, this)
+        await this._stateMachineDescriptor.beforeTransition(this._context, action, {
+          ...this.dependencies,
+          machine: this
+        })
       }
-      await event.action(this.context, action.payload, this)
+      await event.action(this.context, action.payload, { ...this.dependencies, machine: this })
       this._context.state = event.target
 
       if (this._stateMachineDescriptor.afterTransition) {
-        await this._stateMachineDescriptor.afterTransition(this._context, action, this)
+        await this._stateMachineDescriptor.afterTransition(this._context, action, {
+          ...this.dependencies,
+          machine: this
+        })
       }
     } catch (err) {
       const { retry } = this._stateMachineDescriptor
@@ -67,7 +89,10 @@ export class FiniteStateMachine<
       if (event.catch) {
         for (const catchObject of event.catch) {
           if (err instanceof catchObject.error) {
-            await catchObject.action(this.context, action.payload, this)
+            await catchObject.action(this.context, action.payload, {
+              ...this.dependencies,
+              machine: this
+            })
             this._context.state = catchObject.target
             found = true
             break
@@ -76,7 +101,7 @@ export class FiniteStateMachine<
       }
 
       if (!found && retry && err instanceof StateMachineException) {
-        retry.action(this._context, action, this)
+        retry(this._context, action, { ...this.dependencies, machine: this })
       }
     } finally {
       this.executeNextAction()
